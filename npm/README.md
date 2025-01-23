@@ -1,54 +1,4 @@
-# AI Image Generator
-
-A Next.js application that generates images using AI, with Firebase authentication and Replicate integration.
-
-## Setup
-
-1. Clone the repository
-```bash
-git clone https://github.com/ousepachn/ImageGenerator.git
-cd ImageGenerator
-```
-
-2. Install dependencies
-```bash
-npm install
-```
-
-3. Set up environment variables
-- Copy `.env.example` to `.env.local`
-```bash
-cp .env.example .env.local
-```
-- Fill in your Firebase configuration in `.env.local`
-- Add your Replicate API token if you're using it
-
-4. Run the development server
-```bash
-npm run dev
-```
-
-## Environment Variables
-
-The following environment variables are required:
-
-### Firebase Configuration
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-
-### Replicate API (if using)
-- `REPLICATE_API_TOKEN`
-
-## Features
-
-- Google Authentication
-- AI Image Generation
-- Modern UI with Tailwind CSS
-- Responsive Design
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
@@ -66,7 +16,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

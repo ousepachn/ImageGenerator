@@ -67,6 +67,7 @@ export async function POST(request) {
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
+      timeout: 180000, // 3 minutes timeout
     });
 
     // Get base config and add prompt
@@ -78,11 +79,16 @@ export async function POST(request) {
 
     console.log('Creating prediction with config:', config);
 
-    // Create prediction
-    const prediction = await replicate.predictions.create({
-      model: MODEL_IDENTIFIERS[model],
-      input: config,
-    });
+    // Create prediction with timeout handling
+    const prediction = await Promise.race([
+      replicate.predictions.create({
+        model: MODEL_IDENTIFIERS[model],
+        input: config,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 150000) // 2.5 minutes timeout
+      )
+    ]);
 
     console.log('Initial prediction:', prediction);
 
@@ -126,11 +132,36 @@ export async function POST(request) {
       );
     }
 
-    const errorMessage = error.response?.data?.detail || error.message;
+    if (error.message === 'Request timeout' || error.code === 'ETIMEDOUT') {
+      return NextResponse.json(
+        { 
+          error: 'The request timed out. The image generation is taking longer than expected.',
+          details: { message: 'Request timeout' }
+        },
+        { status: 504 }
+      );
+    }
+
+    // Handle non-JSON responses and format error message
+    let errorMessage = 'Failed to generate image';
+    let details = null;
+
+    try {
+      if (error.response?.data) {
+        details = typeof error.response.data === 'string' 
+          ? { message: error.response.data }
+          : error.response.data;
+      } else if (error.message) {
+        details = { message: error.message };
+      }
+    } catch (e) {
+      details = { message: 'Unknown error occurred' };
+    }
+
     return NextResponse.json(
       { 
-        error: 'Failed to generate image: ' + errorMessage,
-        details: error.response?.data || error.message
+        error: errorMessage,
+        details: details
       },
       { status: 500 }
     );

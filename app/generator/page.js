@@ -196,7 +196,7 @@ export default function Generator() {
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="text-[#4466FF] text-2xl">▲</span>
-            <span className="font-medium">Mount Cursor</span>
+            <span className="font-medium">AI images4ever</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-gray-600">{user.email}</span>

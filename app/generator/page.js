@@ -44,6 +44,7 @@ export default function Generator() {
   const [error, setError] = useState(null);
   const [selectedModel, setSelectedModel] = useState('stable-diffusion');
   const [user, setUser] = useState(null);
+  const [generationId, setGenerationId] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -58,6 +59,57 @@ export default function Generator() {
     return () => unsubscribe();
   }, [router]);
 
+  useEffect(() => {
+    let pollInterval;
+
+    const checkStatus = async () => {
+      if (!generationId) return;
+
+      try {
+        const response = await fetch(`/api/status?id=${generationId}`);
+        const data = await response.json();
+
+        if (data.error) {
+          setError(data.error);
+          setGenerationId(null);
+          setIsLoading(false);
+          return;
+        }
+
+        if (data.status === 'success' && data.imageUrl) {
+          setImageUrl(data.imageUrl);
+          setGenerationId(null);
+          setIsLoading(false);
+          return;
+        }
+
+        if (data.status === 'error') {
+          setError(data.error || 'Failed to generate image');
+          setGenerationId(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // Continue polling if still processing
+      } catch (err) {
+        console.error('Error checking status:', err);
+        setError('Failed to check generation status');
+        setGenerationId(null);
+        setIsLoading(false);
+      }
+    };
+
+    if (generationId) {
+      pollInterval = setInterval(checkStatus, 1000);
+    }
+
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [generationId]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (isLoading) return;
@@ -65,6 +117,7 @@ export default function Generator() {
     setIsLoading(true);
     setError(null);
     setImageUrl(null);
+    setGenerationId(null);
 
     try {
       const response = await fetch('/api/generate', {
@@ -86,15 +139,16 @@ export default function Generator() {
 
       if (data.error) {
         setError(data.error);
-      } else if (!data.imageUrl) {
-        setError('No image URL received from the server');
+        setIsLoading(false);
+      } else if (data.id) {
+        setGenerationId(data.id);
       } else {
-        setImageUrl(data.imageUrl);
+        setError('No generation ID received from the server');
+        setIsLoading(false);
       }
     } catch (err) {
       console.error('Error:', err);
       setError(err.message || 'Failed to generate image. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
